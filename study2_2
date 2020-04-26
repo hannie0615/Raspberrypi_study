@@ -1,0 +1,59 @@
+# qr코드 예시
+# qr코드 리딩에 있어서 핵심 모듈-cv2, pyzbar
+
+#import
+from imutils.video import VideoStream  #Q.왜 설치과정에서 자꾸 오류가 날까?
+from pyzbar import pyzbar
+import argparse
+import datetime
+import imutils
+import time
+import cv2  
+
+#파싱
+ap = argparse.ArgumentParser() 
+ap.add_argument("-o", "--output", type=str, default="barcodes.csv", help="path to output CSV file containing barcodes")
+args = vars(ap.parse_args())
+
+#videoStream을 시작
+print("[INFO] starting video stream...")
+vs = VideoStream(usePiCamera=True).start()
+
+time.sleep(2.0)
+csv = open(args["output"], "w")  #"w"=write, 쓰기 가능
+found = set()  #초기화
+
+while True:
+    frame = vs.read()
+    frame = imutils.resize(frame, width=400)  #이미지가 있는 영역을 감지_frame에 저장
+
+    barcodes = pyzbar.decode(frame) #이미지(frame)에 있는 바코드 이미지를 해독(decode).
+
+    for barcode in barcodes:
+        (x, y, w, h) = barcode.rect
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2) #바코드 이미지 영역
+  
+#utf-8 인코딩
+    barcodeData = barcode.data.decode("utf-8")  #객체 타입 '문자열'로 변경 
+    barcodeType = barcode.type 
+
+# 이미지에 바코드의 데이터와 타입을 표시하는 코드
+    text = "{} ({})".format(barcodeData, barcodeType)
+    cv2.putText(frame, text, (x, y - 10),  #putText=말 그대로 문자를 집어넣다. putText(대상, 문자, 위치)
+    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2) 
+
+    if barcodeData not in found:
+        csv.write("{},{}\n".format(datetime.datetime.now(), barcodeData)) #datetime 모듈: 시간을 기록
+        csv.flush()
+        found.add(barcodeData)
+  
+    cv2.imshow("Barcode Scanner", frame)  #이미지를 출력
+    key = cv2.waitKey(1) & 0xFF
+    
+    if key == ord("q"): #"q"버튼이 루프를 break할 수 있는 키로 임의설정
+        break
+        
+print("[INFO] cleaning up...")  #과정 끝
+csv.close() 
+cv2.destroyAllWindows()
+vs.stop()  #닫는다.
