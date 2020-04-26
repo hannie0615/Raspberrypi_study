@@ -1,0 +1,36 @@
+# zbar 소스 다운로드 링크: http://zbar.sourceforge.net/download.html
+# python3
+
+# 가상환경에 pyzbar 모듈 설치
+# $ pip3 install pyzbar
+
+#바코드 리딩 예시
+from pyzbar import pyzbar
+import argparse
+import cv2
+
+#이미지를 입력하는 과정
+ap = argparse.ArgumentParser()  #파싱-Q.제일 모르겠는 부분
+ap.add_argument("-i", "--image", required=True, help="path to input image")
+args = vars(ap.parse_args())
+
+image = cv2.imread(args["image"]) #image를 cv2로 읽는다.(loading)
+barcodes = pyzbar.decode(image) #pyzbar모듈 decode함수로 qr코드 읽기.
+
+for barcode in barcodes:  #바코드의 영역을 rectangle형으로 추출
+    (x, y, w, h) = barcode.rect 
+    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+barcodeData = barcode.data.decode("utf-8") #객체 타입 바꿔주기 '바이트'->'문자열'
+barcodeType = barcode.type
+
+text = "{} ({})".format(barcodeData, barcodeType) #포맷하기
+cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+print("[INFO] Found {} barcode: {}".format(barcodeType, barcodeData))
+
+cv2.imshow("Image", image) #이미지 출력
+cv2.waitKey(0)
+
+
+
