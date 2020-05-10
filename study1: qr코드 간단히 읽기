@@ -4,11 +4,13 @@ import pyzbar.pyzbar as pyzbar #모듈은 pyzbar, cv2를 사용한다.
 import cv2
 import matplotlib.pyplot as plt 
 
-img = cv2.imread('img/bh_bar.jpg') #img는 pc에 저장된 이미지 파일을 불러오기. img에 저장
-plt.imshow(img) #이미지를 표시
+img = cv2.imread('C:/Users/sksms/Documents/qr_img.png') #img는 pc에 저장된 이미지 파일을 불러오기. img에 저장
+plt.imshow(img)#이미지를 표시
+plt.show()
 
 qrcode = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 plt.imshow(qrcode, cmap='gray')
+plt.show()
 
 decoded = pyzbar.decode(qrcode) #코드 풀어내기
 
@@ -19,3 +21,4 @@ for d in decoded:
     cv2.rectangle(img, (d.rect[0], d.rect[1]), (d.rect[0] + d.rect[2], d.rect[1] + d.rect[3]), (0, 0, 255), 2)
     
 plt.imshow(img) #읽어낸 이미지를 표시
+plt.show()
